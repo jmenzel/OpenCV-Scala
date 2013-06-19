@@ -25,6 +25,9 @@ object SimpleGui extends SimpleSwingApplication
   val x = new Highgui
   val label = new Label
   val slider = new Slider() { min = 0; max = 100 }
+  
+  // List with ToggleButtons
+  
   val blist = new ToggleButton
   			 {
 	        	text = "No Action  "
@@ -48,6 +51,7 @@ object SimpleGui extends SimpleSwingApplication
   			 
   
   
+  // Untoggle all other Buttons
   def unToggleButtonsExceptOf(b: ToggleButton): Unit =
   {
     blist.filterNot(_.text==b.text).foreach(_.selected=false)
@@ -60,14 +64,18 @@ object SimpleGui extends SimpleSwingApplication
 
         // Layout frame contents
         
+        //Global Flowpanel
         contents = new FlowPanel
         {
+          //Boxpanel for left Side
           contents += new BoxPanel(Orientation.Vertical)
           {
+            //add buttons and slider
             blist.foreach(contents.append(_))
             contents.append(slider)                       
 	      }
           
+          //flowpanel for image
           contents += new FlowPanel
           {
             val imageScrollPane = new ScrollPane(imageView) {
@@ -77,8 +85,10 @@ object SimpleGui extends SimpleSwingApplication
           }
         }
         
+        //center window on the screen
         centerOnScreen()
         
+        //start sho the webcam with no manipulation
         blist(0).selected = true
         showWebcam(blist(0))
   }
@@ -87,6 +97,7 @@ object SimpleGui extends SimpleSwingApplication
   {
     val bytes = new MatOfByte();
 
+    //Umwandeln des Bildes
     Highgui.imencode(".jpg", orig, bytes); 
 
     val byteArr = bytes.toArray();
@@ -94,9 +105,11 @@ object SimpleGui extends SimpleSwingApplication
 
     try 
     {
+        //Bytes als Bild umrechnen
         val in = new ByteArrayInputStream(byteArr);
         val bufImage = ImageIO.read(in);
         
+        //Auf Gui anzeigen
         label.icon = new ImageIcon(bufImage)
     } 
     catch
@@ -105,7 +118,7 @@ object SimpleGui extends SimpleSwingApplication
     }
   }
   
-  
+ 
   def showWebcam(b: ToggleButton, f:(Mat,Int) => Mat = (x:Mat, y:Int) => x) =
   {
     import org.opencv.core._
@@ -117,14 +130,22 @@ object SimpleGui extends SimpleSwingApplication
 	  
 	  def inner: Unit = 
 	  {
+	      //Async Block starten
 		  val fu = future
 		  {
 		    val frame = new Mat
+		    
+		    //Bild von Webcam holen
 		    cap.retrieve(frame)
+		    
+		    //HOF für Manipulation anwenden
 		    if(!frame.empty()) aktImage(f(frame, slider.value))
+		    
+		    //Kurze Pause ;)
 			Thread.sleep(35);
 		    
 		  }onComplete { 
+		    //Und von vorne
 	     	case Success(result) => if(b.selected) inner 
 	     	case Failure(failure) => println(failure) 
 	      }

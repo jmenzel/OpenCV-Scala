@@ -24,8 +24,13 @@ object EdgeDetector
 	  val ratio = 3
 	  val kernel_size = 3
 	  
+	  // Convert the image to grayscale
 	  Imgproc.cvtColor(src, src_gray, Imgproc.COLOR_BGR2GRAY)
+	  
+	  // Reduce noise with a kernel 3x3
 	  Imgproc.blur(src_gray, detected_edges, new Size(3,3))
+	  
+	  // Canny detector
 	  Imgproc.Canny(detected_edges, detected_edges, lowThreshold*ratio, kernel_size);
 	  
 	  src.copyTo(dest, detected_edges)
@@ -47,13 +52,18 @@ object EdgeDetector
     val ratio = 3
     val kernel_size = 3
   
+    // Convert image to gray and blur it
     Imgproc.cvtColor(src, src_gray, Imgproc.COLOR_BGR2GRAY)
     Imgproc.blur(src_gray, detected_edges, new Size(3,3))
+    
+    // Detect edges using canny
     Imgproc.Canny(detected_edges, detected_edges, sthreshold*ratio, kernel_size);
+    
+    // Find contours
     Imgproc.findContours(detected_edges, matList, hierarchy, 3, 2, new Point(0, 0))
     
+    // Draw contours
     val drawing = Mat.zeros( detected_edges.size, CvType.CV_8UC3)
-       
     for(i <- 0 to matList.size - 1) 
       Imgproc.drawContours(drawing, matList, i, new Scalar(Random.nextInt(255), Random.nextInt(255), Random.nextInt(255)), 2, 8, hierarchy, 0, new Point)
     
